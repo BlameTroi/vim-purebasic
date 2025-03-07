@@ -26,6 +26,7 @@ syntax keyword pureBasicLanguageKeywords Module EndModule
 syntax keyword pureBasicLanguageKeywords UseModule UnUseModule
 syntax keyword pureBasicLanguageKeywords End Swap Print With EndWith
 syntax keyword pureBasicLanguageKeywords Interface EndInterface
+syntax keyword pureBasicLanguageKeywords Str Chr
 highlight link pureBasicLanguageKeywords Keyword
 
 syntax keyword pureBasicFUnction Procedure EndProcedure ProcedureReturn
@@ -60,7 +61,7 @@ syntax keyword pureBasicPreCondit Defined InitializeStructure CopyStructure
 syntax keyword pureBasicPreCondit ClearStructure ResetStructure Bool
 highlight link pureBasicPreCondit PreCondit
 
-syntax match pureBasicConstant "\v#PB_(\a|_)*"
+syntax match pureBasicConstant "\v#PB_(\a|_|\d)*"
 highlight link pureBasicConstant Constant
 
 syntax keyword pureBasicRepeat For ForEach To Step Next
