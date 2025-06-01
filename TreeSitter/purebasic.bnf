@@ -1,0 +1,413 @@
+ /*
+ * Copyright (c) 2020 Daniel Brall
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+{
+  parserClass="eu.bradan.purebasic.PureBasicParser"
+  parserUtilClass="eu.bradan.purebasic.psi.impl.PureBasicParserUtil"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="PureBasic"
+  psiImplClassSuffix="Impl"
+  psiPackage="eu.bradan.purebasic.psi"
+  psiImplPackage="eu.bradan.purebasic.psi.impl"
+
+  elementTypeHolderClass="eu.bradan.purebasic.psi.PureBasicTypes"
+  elementTypeClass="eu.bradan.purebasic.psi.PureBasicElementType"
+  tokenTypeClass="eu.bradan.purebasic.psi.PureBasicTokenType"
+
+  psiImplUtilClass="eu.bradan.purebasic.psi.impl.PureBasicPsiImplUtil"
+
+//  tokens = [
+//    SEPARATOR='regexp:[:\n]'
+//    SPACE='regexp:\s+'
+//
+//    COMMENT='regexp:;.*'
+//    INLINE_ASM='regexp:^\s*![^\r\n:]*'
+//    STRING='regexp:\"([^\r\n\"]*)\"|~\"([^\r\n\\\"]+|("\\"\")|"\\"[abfnrtv\\])*\"'
+//    CHARACTER="regexp:'([^\r\n\"]+|(\\')|\\[0abfnrtv\\])'"
+//    KEYWORD='regexp:XOr|XIncludeFile|With|While|Wend|UseModule|UnuseModule|Until|UndefineMacro|To|Threaded|Swap|StructureUnion|Structure|Step|Static|Shared|Select|Runtime|Return|Restore|Repeat|ReDim|Read|PrototypeC|Prototype|Protected|ProcedureReturn|ProcedureDLL|ProcedureCDLL|ProcedureC|Procedure|Or|Not|Next|NewMap|NewList|Module|Map|MacroExpandedCount|Macro|List|Interface|IncludePath|IncludeFile|IncludeBinary|ImportC|Import|If|Goto|Gosub|Global|ForEver|ForEach|For|FakeReturn|Extends|EnumerationBinary|Enumeration|EndWith|EndStructureUnion|EndStructure|EndSelect|EndProcedure|EndModule|EndMacro|EndInterface|EndImport|EndIf|EndEnumeration|EndDeclareModule|EndDataSection|End|EnableJS|EnableExplicit|EnableDebugger|EnableASM|ElseIf|Else|DisableJS|DisableExplicit|DisableDebugger|DisableASM|Dim|Define|Default|DeclareModule|DeclareDLL|DeclareCDLL|DeclareC|Declare|DebugLevel|Debug|DataSection|Data|Continue|CompilerWarning|CompilerSelect|CompilerIf|CompilerError|CompilerEndSelect|CompilerEndIf|CompilerElseIf|CompilerElse|CompilerDefault|CompilerCase|Case|CallDebugger|Break|As|Array|And|Align'
+//    NUMBER='regexp:\$[0-9A-Fa-f]+|%[01]+|[0-9]+(\.[0-9]+|)'
+//    OPERATOR='regexp:\(|\)|[|]|<=|=<|>=|=>|<>|<<|>>|=|\+|-|\*|/|&|\||!|~|<|>|%|.|,|\\|#|::|@|\?'
+//    IDENTIFIER='regexp:[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//    POINTER_IDENTIFIER='regexp:\*[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//    CONSTANT_IDENTIFIER='regexp:#[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//  ]
+
+  extends("simple_statement")=statement
+  extends("block_statement")=statement
+  extends(".*_stmt")=simple_statement
+  extends(".*_block")=block_statement
+
+  name(".*expression")='expression'
+  extends(".*expression")=expression
+}
+
+pureBasicFile ::= [sep] statements_error_tolerant [sep]
+
+sep ::= SEPARATOR+
+private nosep ::= !sep
+
+parse_label_identifier ::= LABEL_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_identifier ::= IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_pointer_identifier ::= POINTER_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_constant_identifier ::= CONSTANT_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+
+statement ::= simple_statement_|block_statement_|INLINE_ASM|COMMENT
+private block_statement_ ::= macro_block|comp_condition_block|procedure_block|with_block|structure_block|interface_block|
+                    import_block|data_section_block|enumeration_block|declare_module_block|define_module_block|
+                    loop_block|condition_block|structure_union_block
+fake block_statement ::= block_statement_
+private simple_statement_ ::= include_stmt|include_binary_stmt|include_path_stmt|use_module_stmt|unuse_module_stmt|
+                    undefine_macro_stmt|swap_stmt|runtime_stmt|return_stmt|restore_stmt|read_stmt|prototype_stmt|
+                    macro_expanded_count_stmt|goto_stmt|gosub_stmt|fake_return_stmt|end_stmt|enable_js_stmt|
+                    enable_explicit_stmt|enable_debugger_stmt|enable_asm_stmt|disable_js_stmt|disable_explicit_stmt|
+                    disable_debugger_stmt|disable_asm_stmt|debug_level_stmt|debug_stmt|continue_stmt|break_stmt|
+                    compiler_warning_stmt|compiler_error_stmt|call_debugger_stmt|data_list_stmt|procedure_return_stmt|
+                    assignment_stmt|call_stmt|declaration_stmt|label_stmt|parse_constant_identifier
+fake simple_statement ::= simple_statement_;
+
+private statements ::= statement (sep statement)*
+
+// Error tolerant statements for the very first layer
+private external always_true_statement ::= parseAlwaysTrueStatement;
+private statement_error_tolerant ::= always_true_statement [statement] {pin=1 recoverWhile=nosep}
+private statements_error_tolerant ::= statement_error_tolerant (sep statement_error_tolerant)*
+
+pseudo_types ::= 'p' OP_MINUS ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
+type_suffix ::= OP_DOT (pseudo_types|[module_path] parse_identifier)
+static_array_access ::= OP_BRACKOPEN expression OP_BRACKCLOSE
+
+label_stmt ::= parse_label_identifier ':'
+
+
+// All OP_.. have to be referenced for the lexer to be able to use them
+//noinspection BnfUnusedRule
+unary_operators ::= OP_MINUS|OP_XOR|OP_NOT|KEYWORD_NOT|OP_VARADDR|OP_LABELADDR
+//noinspection BnfUnusedRule
+binary_operators ::= OP_LEQ|OP_EQL|OP_GEQ|OP_EQG|OP_NE|OP_LSHIFT|OP_RSHIFT|OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|
+                     OP_AND|OP_OR[sep]|OP_XOR|OP_NOT|OP_LESS|OP_GREATER|OP_MODULO|OP_HASH|
+                     KEYWORD_AND[sep]|KEYWORD_OR[sep]|KEYWORD_XOR[sep]|KEYWORD_AS
+//noinspection BnfUnusedRule
+enclosing_operators ::= OP_DQUOTE|OP_QUOTE|OP_PARENOPEN|OP_PARENCLOSE|OP_BRACKOPEN|OP_BRACKCLOSE
+
+// Assignment
+private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
+assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|OP_AND|OP_OR|OP_XOR|OP_MODULO) expression {pin=2}
+
+expression ::= boolneg concat_expression * {
+       mixin="eu.bradan.purebasic.psi.impl.PureBasicExpressionElementImpl"
+       implements="eu.bradan.purebasic.psi.PureBasicExpressionElement"
+   }
+left concat_expression ::= concat_op sep* boolneg *
+concat_op ::= KEYWORD_AND|KEYWORD_OR|KEYWORD_XOR
+
+private boolneg ::= boolneg_expression | comp
+boolneg_expression ::= boolneg_op sep* boolneg
+boolneg_op ::= KEYWORD_NOT
+
+private comp ::= sum comp_expression *
+left comp_expression ::= comp_op sep* sum *
+comp_op ::= OP_GREATER|OP_GEQ|OP_EQG|OP_LESS|OP_LEQ|OP_EQL|OP_EQ|OP_NE
+
+private sum ::= factor sum_expression *
+left sum_expression ::= sum_op sep* factor
+sum_op ::= OP_PLUS|OP_MINUS
+
+private factor ::= bitwise_andor factor_expression *
+left factor_expression  ::= factor_op bitwise_andor
+factor_op ::= OP_MUL|OP_DIV
+
+private bitwise_andor ::= bitshift bitwise_andor_expression *
+left bitwise_andor_expression ::= bitwise_andor_op bitshift
+bitwise_andor_op ::= OP_OR|OP_AND
+
+private bitshift ::= negate bitshift_expression *
+left bitshift_expression ::= bitshift_op negate
+bitshift_op ::= OP_LSHIFT|OP_RSHIFT|OP_MODULO|OP_XOR
+
+private negate ::= negate_expression | atomic_expression
+negate_expression ::= negate_op negate
+negate_op ::= OP_NOT|OP_MINUS
+
+private atomic_expression ::= addressed_identifier|identifier_or_call_chained|atom|parenthesis_expression
+parenthesis_expression ::= OP_PARENOPEN expression OP_PARENCLOSE {pin=1}
+
+addressed_identifier ::= OP_LABELADDR parse_identifier | OP_VARADDR identifier_or_call_chained
+
+module_path_element ::= parse_identifier
+module_path ::= [OP_MODULE] (module_path_element OP_MODULE)*
+structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call
+structure_path ::= [OP_BACKSLASH] (structure_path_element OP_BACKSLASH)*
+identifier_chained ::= [module_path] [structure_path] parse_identifier [static_array_access]
+call_chained ::= [module_path] [structure_path] call
+private identifier_or_call_chained ::= call_chained | identifier_chained
+
+atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING {
+       mixin="eu.bradan.purebasic.psi.impl.PureBasicExpressionElementImpl"
+       implements="eu.bradan.purebasic.psi.PureBasicExpressionElement"
+   }
+
+// Declarations
+declaration_stmt ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
+declaration_scope ::= KEYWORD_GLOBAL|KEYWORD_SHARED|KEYWORD_PROTECTED|KEYWORD_STATIC|KEYWORD_THREADED|KEYWORD_DEFINE
+
+variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
+variable_decl_identifier_notype ::= (parse_identifier|parse_pointer_identifier)
+variable_decl_list ::= variable_decl_identifier [OP_EQ expression] (OP_COMMA [sep] variable_decl_identifier [OP_EQ expression])*
+variable_decl_list_notype ::= variable_decl_identifier_notype (OP_COMMA [sep] variable_decl_identifier_notype)*
+variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype |
+    declaration_scope variable_decl_list |
+    variable_decl_identifier [static_array_access]
+
+array_declaration ::= [declaration_scope] (KEYWORD_DIM|KEYWORD_REDIM) parse_identifier [type_suffix] OP_PARENOPEN parameters_call OP_PARENCLOSE
+list_declaration ::= [declaration_scope] KEYWORD_NEWLIST parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE
+map_declaration ::= [declaration_scope] KEYWORD_NEWMAP parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE
+
+
+
+////////////////////////
+// Blocks
+////////////////////////
+
+// Procedure
+private procedure_decl_pattern ::= [type_suffix] parse_identifier OP_PARENOPEN [parameters_decl] OP_PARENCLOSE
+procedure_declaration ::= (KEYWORD_DECLARECDLL|KEYWORD_DECLAREDLL|KEYWORD_DECLAREC|KEYWORD_DECLARE) procedure_decl_pattern {pin=1}
+
+procedure_block ::= procedure_start procedure_foot {pin=1 methods=[getPresentation]}
+
+private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] [OP_EQ expression]
+private parameters_decl_array ::= KEYWORD_ARRAY parse_identifier [type_suffix] OP_PARENOPEN NUMBER OP_PARENCLOSE {pin=1}
+private parameters_decl_list ::= KEYWORD_LIST parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE {pin=1}
+private parameters_decl_map ::= KEYWORD_MAP parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE {pin=1}
+parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map)
+                    (OP_COMMA [sep] (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map))*
+parameters_call ::= expression (OP_COMMA [sep] expression)*
+
+private procedure_start ::= procedure_head [sep statements] sep {pin=1 recoverWhile=no_procedure_foot}
+procedure_head ::= (KEYWORD_PROCEDURECDLL | KEYWORD_PROCEDUREDLL | KEYWORD_PROCEDUREC | KEYWORD_PROCEDURE) procedure_decl_pattern {pin=1 recoverWhile=nosep}
+procedure_return_stmt ::= KEYWORD_PROCEDURERETURN [expression]
+procedure_foot ::= KEYWORD_ENDPROCEDURE
+private no_procedure_foot ::= !procedure_foot
+
+// Macro
+macro_parameter_decl ::= parse_identifier [OP_EQ [expression]]
+macro_parameter_decl_list ::= macro_parameter_decl (OP_COMMA [sep] macro_parameter_decl)*
+private macro_decl_pattern ::= [type_suffix] parse_identifier [OP_PARENOPEN [macro_parameter_decl_list] OP_PARENCLOSE]
+
+macro_block ::= macro_start {pin=1 methods=[getPresentation]}
+
+private external accept_until_macro_foot ::= acceptUntil KEYWORD_ENDMACRO; // macros can be weird, just don't parse their inner.
+private macro_start ::= macro_head sep accept_until_macro_foot {pin=1}
+macro_head ::= KEYWORD_MACRO macro_decl_pattern {pin=1 recoverWhile=nosep}
+
+// With
+with_block ::= with_start with_foot
+
+private with_start ::= with_head [sep statements] sep {pin=1 recoverWhile=no_with_foot}
+with_head ::= KEYWORD_WITH identifier_or_call_chained {pin=1 recoverWhile=nosep}
+with_foot ::= KEYWORD_ENDWITH
+private no_with_foot ::= !with_foot
+
+// A call (macro or procedure, something with parenthesis)
+call ::= parse_identifier OP_PARENOPEN [parameters_call] OP_PARENCLOSE
+call_stmt ::= call_chained
+
+// Structure
+structure_block ::= structure_start structure_foot {pin=1 methods=[getPresentation]}
+
+private structure_start ::= structure_head [sep statements] sep {pin=1 recoverWhile=no_structure_foot}
+structure_head ::= KEYWORD_STRUCTURE parse_identifier [KEYWORD_EXTENDS parse_identifier] [KEYWORD_ALIGN (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
+structure_foot ::= KEYWORD_ENDSTRUCTURE
+private no_structure_foot ::= !structure_foot
+
+structure_union_block ::= structure_union_start structure_union_foot {pin=1}
+
+private structure_union_start ::= structure_union_head [sep statements] sep {pin=1 recoverWhile=no_structure_union_foot}
+structure_union_head ::= KEYWORD_STRUCTUREUNION {pin=1 recoverWhile=nosep}
+structure_union_foot ::= KEYWORD_ENDSTRUCTUREUNION
+private no_structure_union_foot ::= !structure_union_foot
+
+// Interface
+interface_block ::= interface_start interface_foot {pin=1 methods=[getPresentation]}
+
+private interface_start ::= interface_head [sep statements] sep {pin=1 recoverWhile=no_interface_foot}
+interface_head ::= KEYWORD_INTERFACE parse_identifier [KEYWORD_EXTENDS parse_identifier] {pin=1 recoverWhile=nosep}
+interface_foot ::= KEYWORD_ENDINTERFACE
+private no_interface_foot ::= !interface_foot
+
+// Import
+import_block ::= import_start import_foot {pin=1}
+
+private import_start ::= import_head [sep statements] sep {pin=1 recoverWhile=no_import_foot}
+import_head ::= (KEYWORD_IMPORT|KEYWORD_IMPORTC) expression {pin=1 recoverWhile=nosep}
+import_foot ::= KEYWORD_ENDIMPORT
+private no_import_foot ::= !import_foot
+
+// DataSection
+data_section_block ::= data_section_start data_section_foot {pin=1}
+
+data_entry ::= parse_constant_identifier|NUMBER|STRING
+data_list_stmt ::= KEYWORD_DATA [type_suffix] data_entry (OP_COMMA [sep] data_entry)*
+
+private data_section_start ::= data_section_head [sep statements] sep {pin=1 recoverWhile=no_data_section_foot}
+data_section_head ::= KEYWORD_DATASECTION {pin=1 recoverWhile=nosep}
+data_section_foot ::= KEYWORD_ENDDATASECTION
+private no_data_section_foot ::= !data_section_foot
+
+// DeclareModule
+declare_module_block ::= declare_module_start declare_module_foot {pin=1 methods=[getPresentation]}
+
+private declare_module_start ::= declare_module_head [sep statements] sep {pin=1 recoverWhile=no_declare_module_foot}
+declare_module_head ::= KEYWORD_DECLAREMODULE parse_identifier {pin=1 recoverWhile=nosep}
+declare_module_foot ::= KEYWORD_ENDDECLAREMODULE
+private no_declare_module_foot ::= !declare_module_foot
+
+// Module
+define_module_block ::= define_module_start define_module_foot {pin=1 methods=[getPresentation]}
+
+private define_module_start ::= define_module_head [sep statements] sep {pin=1 recoverWhile=no_define_module_foot}
+define_module_head ::= KEYWORD_MODULE parse_identifier {pin=1 recoverWhile=nosep}
+define_module_foot ::= KEYWORD_ENDMODULE
+private no_define_module_foot ::= !define_module_foot
+
+// Enumeration
+enumeration_block ::= enumeration_start enumeration_foot {pin=1}
+
+private enumeration_start ::= enumeration_head [sep statements] sep {pin=1 recoverWhile=no_enumeration_foot}
+enumeration_head ::= (KEYWORD_ENUMERATION | KEYWORD_ENUMERATIONBINARY) [parse_identifier] {pin=1 recoverWhile=nosep}
+enumeration_foot ::= KEYWORD_ENDENUMERATION
+private no_enumeration_foot ::= !enumeration_foot
+
+
+// Loops
+private while ::= while_start while_foot {pin=1}
+private while_start ::= while_head [sep statements] sep {pin=1 recoverWhile=no_while_foot}
+private while_head ::= KEYWORD_WHILE expression {pin=1 recoverWhile=nosep}
+private while_foot ::= KEYWORD_WEND
+private no_while_foot ::= !while_foot
+private for ::= for_start for_foot {pin=1}
+private for_start ::= for_head [sep statements] sep {pin=1 recoverWhile=no_for_foot}
+private for_head ::= KEYWORD_FOR variable_decl_identifier OP_EQ expression KEYWORD_TO expression [KEYWORD_STEP NUMBER] {pin=1 recoverWhile=nosep}
+private for_foot ::= KEYWORD_NEXT [parse_identifier]
+private no_for_foot ::= !for_foot
+private foreach ::= foreach_start foreach_foot {pin=1}
+private foreach_start ::= foreach_head [sep statements] sep {pin=1 recoverWhile=no_foreach_foot}
+private foreach_head ::= KEYWORD_FOREACH identifier_or_call_chained {pin=1 recoverWhile=nosep}
+private foreach_foot ::= KEYWORD_NEXT
+private no_foreach_foot ::= !foreach_foot
+private repeat ::= KEYWORD_REPEAT [sep statements] sep (KEYWORD_UNTIL expression | KEYWORD_FOREVER) {pin=1}
+
+loop_block ::= while|for|foreach|repeat
+
+// Conditional
+private condition_if ::= KEYWORD_IF expression [sep statements] {pin=1}
+private condition_elseif ::= KEYWORD_ELSEIF expression [sep statements] {pin=1}
+private condition_else ::= KEYWORD_ELSE [sep statements] {pin=1}
+private condition_endif ::= KEYWORD_ENDIF
+
+// Case 1
+// Case 1, 10
+// Case 2 , 3 , 4
+// Case 15 To 20, 30, 40 To 50
+private condition_case ::= (KEYWORD_CASE (expression(KEYWORD_TO expression)?((',' expression(KEYWORD_TO expression)?)+)?)|KEYWORD_DEFAULT) [sep statements]
+private condition_select ::= KEYWORD_SELECT expression (sep condition_case)* sep condition_endselect {pin=1}
+private condition_endselect ::= KEYWORD_ENDSELECT
+
+condition_block ::= condition_if (sep condition_elseif)* [sep condition_else] sep condition_endif | condition_select
+
+// Compiler Conditional
+private comp_condition_if ::= KEYWORD_COMPILERIF expression [sep statements] {pin=1}
+private comp_condition_elseif ::= KEYWORD_COMPILERELSEIF expression [sep statements] {pin=1}
+private comp_condition_else ::= KEYWORD_COMPILERELSE [sep statements] {pin=1}
+private comp_condition_endif ::= KEYWORD_COMPILERENDIF
+
+private comp_condition_case ::= (KEYWORD_COMPILERCASE expression|KEYWORD_COMPILERDEFAULT) [sep statements] {pin=1}
+private comp_condition_select ::= KEYWORD_COMPILERSELECT expression (sep comp_condition_case)* sep comp_condition_endselect {pin=1}
+private comp_condition_endselect ::= KEYWORD_COMPILERENDSELECT
+
+comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_condition_else] sep comp_condition_endif |
+                   comp_condition_select
+
+////////////////////////
+// Simple Statements
+////////////////////////
+
+include_stmt ::= (KEYWORD_XINCLUDEFILE|KEYWORD_INCLUDEFILE) STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
+include_binary_stmt ::= KEYWORD_INCLUDEBINARY STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
+include_path_stmt ::= KEYWORD_INCLUDEPATH STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
+use_module_stmt ::= KEYWORD_USEMODULE parse_identifier {pin=1}
+unuse_module_stmt ::= KEYWORD_UNUSEMODULE parse_identifier {pin=1}
+undefine_macro_stmt ::= KEYWORD_UNDEFINEMACRO parse_identifier {pin=1}
+swap_stmt ::= KEYWORD_SWAP identifier_or_call_chained OP_COMMA [sep] identifier_or_call_chained {pin=1}
+runtime_stmt ::= KEYWORD_RUNTIME (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure_block|enumeration_block) {pin=1}
+return_stmt ::= KEYWORD_RETURN
+restore_stmt ::= KEYWORD_RESTORE parse_identifier {pin=1}
+read_stmt ::= KEYWORD_READ [type_suffix] parse_identifier {pin=1}
+prototype_stmt ::= (KEYWORD_PROTOTYPEC|KEYWORD_PROTOTYPE) procedure_decl_pattern {pin=1}
+macro_expanded_count_stmt ::= KEYWORD_MACROEXPANDEDCOUNT
+goto_stmt ::= KEYWORD_GOTO parse_identifier {pin=1}
+gosub_stmt ::= KEYWORD_GOSUB parse_identifier {pin=1}
+fake_return_stmt ::= KEYWORD_FAKERETURN
+end_stmt ::= KEYWORD_END expression {pin=1}
+enable_js_stmt ::= KEYWORD_ENABLEJS
+enable_explicit_stmt ::= KEYWORD_ENABLEEXPLICIT
+enable_debugger_stmt ::= KEYWORD_ENABLEDEBUGGER
+enable_asm_stmt ::= KEYWORD_ENABLEASM
+disable_js_stmt ::= KEYWORD_DISABLEJS
+disable_explicit_stmt ::= KEYWORD_DISABLEEXPLICIT
+disable_debugger_stmt ::= KEYWORD_DISABLEDEBUGGER
+disable_asm_stmt ::= KEYWORD_DISABLEASM
+debug_level_stmt ::= KEYWORD_DEBUGLEVEL (parse_constant_identifier|NUMBER) {pin=1}
+debug_stmt ::= KEYWORD_DEBUG expression [OP_COMMA [sep] (parse_constant_identifier|NUMBER)] {pin=1}
+continue_stmt ::= KEYWORD_CONTINUE
+break_stmt ::= KEYWORD_BREAK
+compiler_warning_stmt ::= KEYWORD_COMPILERWARNING (parse_constant_identifier|STRING) {pin=1}
+compiler_error_stmt ::= KEYWORD_COMPILERERROR (parse_constant_identifier|STRING) {pin=1}
+call_debugger_stmt ::= KEYWORD_CALLDEBUGGER
+
+////////////////////////
+// Misc
+////////////////////////
+
+//noinspection BnfUnusedRule
+private leftTokens ::= KEYWORD|OPERATOR
+// private tokenTypes_ ::= COMMENT|KEYWORD|OPERATOR|STRING|CHARACTER|CONSTANT_IDENTIFIER|NUMBER|IDENTIFIER|POINTER_IDENTIFIER

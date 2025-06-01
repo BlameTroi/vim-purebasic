@@ -24,32 +24,38 @@ syntax keyword pureBasicLanguageKeywords UndefineMacro MacroExpandedCount
 syntax keyword pureBasicLanguageKeywords DeclareModule EndDeclareModule
 syntax keyword pureBasicLanguageKeywords Module EndModule
 syntax keyword pureBasicLanguageKeywords UseModule UnUseModule
-syntax keyword pureBasicLanguageKeywords End Swap Print With EndWith
+syntax keyword pureBasicLanguageKeywords End Swap Print PrintN With EndWith
 syntax keyword pureBasicLanguageKeywords Interface EndInterface
 syntax keyword pureBasicLanguageKeywords Str Chr
 highlight link pureBasicLanguageKeywords Keyword
 
-syntax keyword pureBasicFUnction Procedure EndProcedure ProcedureReturn
-highlight link pureBasicFUnction Function
+" PureBasic has Procedures and not Functions ...
+syntax keyword pureBasicProcedure Procedure EndProcedure ProcedureReturn
+highlight link pureBasicProcedure Function
 
+" Conditionals
 syntax keyword pureBasicConditional If ElseIf Else EndIf
 syntax keyword pureBasicConditional Select Case Default EndSelect
 highlight link pureBasicConditional Conditional
 
+" Structures
 syntax keyword pureBasicStructure Shared Static Structure Extends
 syntax keyword pureBasicStructure Align EndStructure
 syntax keyword pureBasicStructure StructureUnion EndStructureUnion
 highlight link pureBasicStructure Structure
 
+" Debugger
 syntax keyword pureBasicDebug CallDebugger Debug DebugLevel
 syntax keyword pureBasicDebug DisableDebugger EnableDebugger
 highlight link pureBasicDebug Debug
 
+" Data Types
 syntax keyword pureBasicType Array List Map
 syntax keyword pureBasicType Byte Ascii Character Word Unicode Long
 syntax keyword pureBasicType Integer Float Quad Double String
 highlight link pureBasicType Type
 
+" Precompiler 
 syntax keyword pureBasicPreCondit CompilerIf CompilerElseIf CompilerElse
 syntax keyword pureBasicPreCondit CompilerEndIf CompilerSelect CompilerEndSelect
 syntax keyword pureBasicPreCondit CompilerCase CompilerDefault
@@ -90,10 +96,14 @@ syntax match pureBasicOperator "\v\<\>"
 syntax match pureBasicOperator "\v\|\|"
 highlight link pureBasicOperator Operator
 
+" Strings (TODO: single quotes?)
 syntax region pureBasicString start=/\v"/ skip=/\v\\./ end=/\v"/
 highlight link pureBasicString String
 
+" Numeric Constants (TODO: scientific notation?)
 syntax match pureBasicNumber "\v<\d+>"
 syntax match pureBasicNumber "\v<\.\d+>"
 syntax match pureBasicNumber "\v<\d+\.\d+>"
 highlight link pureBasicNumber Number
+
+" vim: ai:et:sw=4:ts=4
