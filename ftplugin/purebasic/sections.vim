@@ -4,6 +4,20 @@
 " Losh's _Learn Vim The Hard Way_. Even if you don't ever plan to use
 " VimScript, I believe the book/website is worth checking out.
 
+" Borrowed from pascal plugin, needs update.
+
+if exists("loaded_matchit")
+  let b:match_ignorecase = 1 " (Pascal is case-insensitive)
+
+  let b:match_words  = '\<\%(asm\|begin\|case\|\%(\%(=\|packed\)\s*\)\@<=\%(class\|object\)\|\%(=\s*\)\@<=interface\|record\|try\)\>'
+  let b:match_words .= ':\%(^\s*\)\@<=\%(except\|finally\|else\|otherwise\)\>'
+  let b:match_words .= ':\<end\>\.\@!'
+
+  let b:match_words .= ',\<repeat\>:\<until\>'
+  " let b:match_words .= ',\<if\>:\<else\>' " FIXME - else clashing with middle else. It seems like a debatable use anyway.
+  let b:match_words .= ',\<unit\>:\<\%(\%(^\s*\)\@<=interface\|implementation\|initialization\|finalization\)\>:\<end\.'
+endif
+
 " no active code at this time
 " 
 " This is straight outta Losh again. I'm not using it yet since I haven't
