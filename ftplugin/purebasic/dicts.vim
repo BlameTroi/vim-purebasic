@@ -6,6 +6,14 @@
 " This creates two global dictionaries to help with folding and indenting
 " of PureBasic code.
 
+if exists("b:did_dict")
+    finish
+endif
+
+let b:did_dict = "purebasic"
+
+finish
+
 setlocal foldmethod=indent
 setlocal foldignore=;
 

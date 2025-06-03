@@ -22,6 +22,12 @@
 " TODO: More configuration options?
 " TODO: Capture diagnostics for quickfix list. Jump locations.
 
+if exists("b:did_run")
+    finish
+endif
+
+let b:did_run = "purebasic"
+
 if !exists("g:PureBasic_Compiler")
 	let g:PureBasic_Compiler = "pbcompiler"
 endif

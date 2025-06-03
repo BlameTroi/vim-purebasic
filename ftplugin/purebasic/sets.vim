@@ -16,6 +16,8 @@
 " IDE. These are different from my true preferences but I'll go with the
 " community standard.
 
+" This is not gated, we let it run every time.
+
 let b:EditorConfig_disable=1
 set shiftwidth=2
 set tabstop=2

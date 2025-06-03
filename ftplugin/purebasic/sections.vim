@@ -6,6 +6,12 @@
 
 " Borrowed from pascal plugin, needs update.
 
+if exists("b:did_section")
+    finish
+endif
+
+let b:did_section = "purebasic"
+
 if exists("loaded_matchit")
   let b:match_ignorecase = 1 " (Pascal is case-insensitive)
 

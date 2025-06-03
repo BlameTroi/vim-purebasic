@@ -38,10 +38,19 @@ I'm trying to set up indenting and proper comment recognition. I'd really like t
 |   `-- purebasic.vim
 |-- ftplugin
 | `-- purebasic
+|       |-- dicts.vim             -- holding for data from PBIDE that will be vimified
 |       |-- folding.vim           -- fold and indent
 |       |-- running.vim           -- compile and run from vim
 |       |-- sections.vim          -- jump by sections
-|       `-- sets.vim -- sets tab/indent stuf
-`-- syntax
-    `-- purebasic.vim -- original syntax file plus changes
+|       |-- sets.vim              -- settings for PureBasic files
+|       `-- work.vim              -- scratch
+|-- indent
+|   `-- purebasic.vim             -- indent function and support
+|-- syntax
+|   `-- purebasic.vim             -- original syntax file plus changes
+`-- testdata
+    |-- README.md
+    |-- ide-indented.pb           -- as the PBIDE indents the source
+    |-- not-indented.pb           -- no leading white space
+    `-- vim-indented.pb           -- testing output
 ```

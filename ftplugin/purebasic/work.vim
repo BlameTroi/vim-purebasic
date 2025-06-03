@@ -1,4 +1,12 @@
 " Create a dictionary keyed by PureBasic keywords with each entry holding
+if exists("b:did_work")
+    finish
+endif
+
+let b:did_work = "purebasic"
+
+finish
+
 " (so far) a list of [indent_before, indent_after]
 let s:pb_indents = {
 \ 'Case':[-1, 1],

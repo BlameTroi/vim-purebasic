@@ -1,27 +1,20 @@
-" /vim-purebsic/ftplugin/purebasic/folding.vim
+" /vim-purebsic/ftplugin/purebasic/dicts.vim
 
-" Almost everything in this directory is built upon the lessons in Steve
-" Losh's _Learn Vim The Hard Way_. Even if you don't ever plan to use
-" VimScript, I believe the book/website is worth checking out.
-
-" For initial testing I'll go with foldmethod indent, and if I don't like
-" that I'll turn this code on and get it working. foldignore sets the
-" indent of a line with a first nonblank character from those in foldignore
-" to the surrounding lines. This only applies when foldmethod=indent.
+" This would be easier in Lua, but I don't want to force anyone to use
+" Neovim if they don't want.
 "
-" But also look ahead to sections on:
-"
-" - Fold/indent using the old ways.
-" - A list of bracketing keywords that might be a better approach
-"   than indent based folding.
+" This creates two global dictionaries to help with folding and indenting
+" of PureBasic code.
 
-if exists("b:did_fold")
+if exists("b:did_dict")
     finish
 endif
 
-let b:did_fold = "purebasic"
+let b:did_dict = "purebasic"
 
-setlocal foldmethod=expr
+finish
+
+setlocal foldmethod=indent
 setlocal foldignore=;
 
 " {{{ Old style folding indenting from Losh
@@ -290,5 +283,34 @@ setlocal foldignore=;
 "Before_50 = 0
 "After_50 = 1
 
-" }}}
+keyword - subordinate - endword
+select          case             endselect
+                default
+compilerselect  compilercase     compilerendselect
+                compilerdefault
+compilerif      compilerelse     compilerendif
+                compilerelseif
+DataSection     data             enddatasection
+if              else             endif
+                elseif           
+declaremodule                    enddeclaremodule
+module                           endmodule
+procedure                        endprocedure
+procedurec                       endprocedure
+procedurecdll                    endprocedure
+proceduredll                     endprocedure
+import                           endimport
+importc                          endimport
+interface                        endinterface
+macro                            endmacro
+enumeration                      endenumeration
+enumerationbinary                endenumeration
+structure                        endstructure
+structureunion                   endstructureunion
+with                             endwith
+for                              next
+foreach                          next
+repeat                           until
+                                 forever
+
 " vim: ai:et:ts=3:sw=3 
