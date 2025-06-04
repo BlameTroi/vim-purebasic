@@ -3,6 +3,9 @@
 " Maintainer: Thomas Knox
 " Latest Revision: 06 Mar 2025
 
+" Modified to fit my naming standards and to define syntax based folding.
+" PureBasic seems amenable to syntax folding.
+
 if exists("b:current_syntax")
     finish
 endif
@@ -106,4 +109,119 @@ syntax match pureBasicNumber "\v<\.\d+>"
 syntax match pureBasicNumber "\v<\d+\.\d+>"
 highlight link pureBasicNumber Number
 
-" vim: ai:et:sw=4:ts=4
+" Syntax based folding for PureBasic.
+"
+" (The starting point for this was the writup at:
+"  https://vim.fandom.com/wiki/Syntax_folding_of_Vim_scripts)
+"
+" Just about everything I would expect to be folded in PureBasic is cleanly
+" wrapped in bracketing statements: Procedure/EndProcedure, For/Next,
+" ForEach/Next, While/Wend and so on. The PureBasic IDE folds based on the
+" major structure blocks (procedure, enumeration, module) but this should
+" do those and a bit more. My only concerns are with things like if/else(if)/endif
+" and select/case/default/endselect. Oh, and nesting of one structure inside
+" itself (for ... for/next ... next).
+"
+" Fold markers must be the first non-blank word on a line. While the PureBasic
+" IDE normalizes case for words (for->For, endmodule->EndModule) these checks
+" are case insensitive.
+
+" define groups that cannot contain the start of a fold
+syn cluster pureBasicNoFold contains=pureBasicComment,pureBasicString,pureBasicSynKeyRegion,pureBasicSynRegPat,pureBasicPatRegion,pureBasicMapLhs,pureBasicOperParen
+",@pureBasicEmbeddedScript
+"syn cluster pureBasicEmbeddedScript contains=pureBasicMzSchemeRegion,pureBasicTclRegion,pureBasicPythonRegion,pureBasicRubyRegion,pureBasicPerlRegion
+
+" while
+" fold while loops
+syn region pureBasicFoldWhile
+      \ start="\v\c^\s*<while>"
+      \ end="\v^\c\s*<wend>"
+      \ transparent fold
+      \ keepend extend
+      \ containedin=ALLBUT,@pureBasicNoFold
+      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
+
+" fold for loops for foreach
+" BUG: both use next as terminator, not sure about nesting
+" Testing, a for next within a for next worked.
+syn region pureBasicFoldFor
+      \ start="\v\c^\s*<(for|foreach)>"
+      \ end="\v^\c\s*<next>"
+      \ transparent fold
+      \ keepend extend
+      \ containedin=ALLBUT,@pureBasicNoFold
+      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
+
+" fold repeat until|forever
+syn region pureBasicFoldRepeat
+            \ start="\v\c^\s*<repeat>"
+            \ end="\v\c^\s*<(until|forever)>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" fold modules and their declarations
+syn region pureBasicFoldDclModule
+            \ start="\v\c^\s*<declaremodule>"
+            \ end="\v\c^\s*<enddeclaremodule>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+syn region pureBasicFoldModule
+            \ start="\v\c^\s*<module>"
+            \ end="\v\c^\s*<endmodule>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" fold procedure
+syn region pureBasicFoldProcedure
+            \ start="\v\c^\s*<procedure>"
+            \ end="\v\c^\s*<endprocedure>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" fold if...else...endif constructs
+"
+" note that 'endif' has a shorthand which can also match many other end patterns
+" if we did not include the word boundary \> pattern, and also it may match
+" syntax end=/pattern/ elements, so we must explicitly exclude these
+"syn region pureBasicFoldIfContainer
+"      \ start="\<if\>"
+"      \ end="\<en\%[dif]\>=\@!"
+"      \ transparent
+"      \ keepend extend
+"      \ containedin=ALLBUT,@pureBasicNoFold
+"      \ contains=NONE
+"      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+ "comment to fix highlight on wiki'
+"syn region pureBasicFoldIf
+"      \ start="\<if\>"
+"      \ end="^\s*\\\?\s*else\%[if]\>"ms=s-1,me=s-1
+"      \ fold transparent
+"      \ keepend
+"      \ contained containedin=pureBasicFoldIfContainer
+"      \ nextgroup=pureBasicFoldElseIf,pureBasicFoldElse
+"      \ contains=TOP
+"      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+ "comment to fix highlight on wiki'
+"syn region pureBasicFoldElseIf
+"      \ start="\<else\%[if]\>"
+"      \ end="^\s*\\\?\s*else\%[if]\>"ms=s-1,me=s-1
+"      \ fold transparent
+"      \ keepend
+"      \ contained containedin=pureBasicFoldIfContainer
+"      \ nextgroup=pureBasicFoldElseIf,pureBasicFoldElse
+"      \ contains=TOP
+"      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+ "comment to fix highlight on wiki'
+"syn region pureBasicFoldElse
+"      \ start="\<el\%[se]\>"
+"      \ end="\<en\%[dif]\>=\@!"
+"      \ fold transparent
+"      \ keepend
+"      \ contained containedin=pureBasicFoldIfContainer
+"      \ contains=TOP
+"      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+ "comment to fix highlight on wiki'
+"
+" fold try...catch...finally...endtry constru
+" vim: ai:et:sw=3:ts=3

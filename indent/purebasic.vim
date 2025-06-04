@@ -12,12 +12,13 @@
 " TODO: switch from g: to s: once debugged.
 " TODO: fix indenting for select/case/case/endselect.
 " TODO: this is very rough
-if exists("b:did_indent")
-   finish
-endif
-let b:did_indent = 1
+"if exists("b:did_indent")
+"   finish
+"endif
+"let b:did_indent = 1
 
-setlocal autoindent
+setlocal noautoindent
+finish
 setlocal indentexpr=g:PbGetIndent(v:lnum)
 " TODO: should indent keys be empty? NO. Or maybe everything in pb_indents?
 " setlocal indentkeys&
@@ -101,7 +102,7 @@ let g:PbIndents = {
 " What should be done, if anything, before this line. So 'Wend':[-1, 0] should
 " outdent this line one shiftwidth from the prior non-blank line.
 
-function g:PbBefore(lnum)
+function! g:PbBefore(lnum)
    "echom "before " . a:lnum . ":" . line(a:lnum)
    if getline(a:lnum) =~ "^\s*$"
       return '0'
@@ -116,7 +117,7 @@ endfunction
 " What should be done, if anything, after this line. So 'Wend':[-1, 0] means
 " that the line following Wend likely has the same indent as Wend.
 
-function g:PbAfter(lnum)
+function! g:PbAfter(lnum)
    " echom "after " . a:lnum . ":" . line(a:lnum)
    if getline(a:lnum) =~ "^\s*$"
       return '0'
@@ -134,7 +135,7 @@ endfunction
 
 " if !exists("*g:PbGetIndent")
 
-function g:PbGetIndent(lnum)
+function! g:PbGetIndent(lnum)
    let this_lnum = a:lnum
    let this_line = getline(this_lnum)
 

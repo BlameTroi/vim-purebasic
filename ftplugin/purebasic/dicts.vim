@@ -14,8 +14,6 @@ let b:did_dict = "purebasic"
 
 finish
 
-setlocal foldmethod=indent
-setlocal foldignore=;
 
 " {{{ Old style folding indenting from Losh
 "

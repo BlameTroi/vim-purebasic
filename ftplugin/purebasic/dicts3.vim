@@ -5,9 +5,7 @@
 "
 " This creates two global dictionaries to help with folding and indenting
 " of PureBasic code.
-
-setlocal foldmethod=indent
-setlocal foldignore=;
+finish
 
 " {{{ Old style folding indenting from Losh
 "
@@ -277,34 +275,34 @@ setlocal foldignore=;
 
 " avoid the pathological cases for now, except case and default don't
 " outdent if preceded by (compiler)select.
-keyword - subordinate - endword
-select          case             endselect
-                default
-compilerselect  compilercase     compilerendselect
-                compilerdefault
-compilerif      compilerelse     compilerendif
-                compilerelseif
-DataSection     data             enddatasection
-if              else             endif
-                elseif           
-declaremodule                    enddeclaremodule
-module                           endmodule
-procedure                        endprocedure
-procedurec                       endprocedure
-procedurecdll                    endprocedure
-proceduredll                     endprocedure
-import                           endimport
-importc                          endimport
-interface                        endinterface
-macro                            endmacro
-enumeration                      endenumeration
-enumerationbinary                endenumeration
-structure                        endstructure
-structureunion                   endstructureunion
-with                             endwith
-for                              next
-foreach                          next
-repeat                           until
-                                 forever
-
+"keyword - subordinate - endword
+"select          case             endselect
+"                default
+"compilerselect  compilercase     compilerendselect
+"                compilerdefault
+"compilerif      compilerelse     compilerendif
+"                compilerelseif
+"DataSection     data             enddatasection
+"if              else             endif
+"                elseif           
+"declaremodule                    enddeclaremodule
+"module                           endmodule
+"procedure                        endprocedure
+"procedurec                       endprocedure
+"procedurecdll                    endprocedure
+"proceduredll                     endprocedure
+"import                           endimport
+"importc                          endimport
+"interface                        endinterface
+"macro                            endmacro
+"enumeration                      endenumeration
+"enumerationbinary                endenumeration
+"structure                        endstructure
+"structureunion                   endstructureunion
+"with                             endwith
+"for                              next
+"foreach                          next
+"repeat                           until
+"                                 forever
+"
 " vim: ai:et:ts=3:sw=3 

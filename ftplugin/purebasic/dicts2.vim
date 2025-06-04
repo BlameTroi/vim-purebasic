@@ -14,8 +14,6 @@ let b:did_dict = "purebasic"
 
 finish
 
-setlocal foldmethod=indent
-setlocal foldignore=;
 
 " {{{ Old style folding indenting from Losh
 "
@@ -282,35 +280,35 @@ setlocal foldignore=;
 "Keyword_50 = With
 "Before_50 = 0
 "After_50 = 1
-
-keyword - subordinate - endword
-select          case             endselect
-                default
-compilerselect  compilercase     compilerendselect
-                compilerdefault
-compilerif      compilerelse     compilerendif
-                compilerelseif
-DataSection     data             enddatasection
-if              else             endif
-                elseif           
-declaremodule                    enddeclaremodule
-module                           endmodule
-procedure                        endprocedure
-procedurec                       endprocedure
-procedurecdll                    endprocedure
-proceduredll                     endprocedure
-import                           endimport
-importc                          endimport
-interface                        endinterface
-macro                            endmacro
-enumeration                      endenumeration
-enumerationbinary                endenumeration
-structure                        endstructure
-structureunion                   endstructureunion
-with                             endwith
-for                              next
-foreach                          next
-repeat                           until
-                                 forever
-
+"
+"keyword - subordinate - endword
+"select          case             endselect
+"                default
+"compilerselect  compilercase     compilerendselect
+"                compilerdefault
+"compilerif      compilerelse     compilerendif
+"                compilerelseif
+"DataSection     data             enddatasection
+"if              else             endif
+"                elseif           
+"declaremodule                    enddeclaremodule
+"module                           endmodule
+"procedure                        endprocedure
+"procedurec                       endprocedure
+"procedurecdll                    endprocedure
+"proceduredll                     endprocedure
+"import                           endimport
+"importc                          endimport
+"interface                        endinterface
+"macro                            endmacro
+"enumeration                      endenumeration
+"enumerationbinary                endenumeration
+"structure                        endstructure
+"structureunion                   endstructureunion
+"with                             endwith
+"for                              next
+"foreach                          next
+"repeat                           until
+"                                 forever
+"
 " vim: ai:et:ts=3:sw=3 
