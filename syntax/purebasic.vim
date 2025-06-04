@@ -99,11 +99,13 @@ syntax match pureBasicOperator "\v\<\>"
 syntax match pureBasicOperator "\v\|\|"
 highlight link pureBasicOperator Operator
 
-" Strings (TODO: single quotes?)
+" Strings
+" (TODO: single quotes?)
 syntax region pureBasicString start=/\v"/ skip=/\v\\./ end=/\v"/
 highlight link pureBasicString String
 
-" Numeric Constants (TODO: scientific notation?)
+" Numeric Constants
+" (TODO: scientific notation?)
 syntax match pureBasicNumber "\v<\d+>"
 syntax match pureBasicNumber "\v<\.\d+>"
 syntax match pureBasicNumber "\v<\d+\.\d+>"
@@ -126,64 +128,115 @@ highlight link pureBasicNumber Number
 " IDE normalizes case for words (for->For, endmodule->EndModule) these checks
 " are case insensitive.
 
-" define groups that cannot contain the start of a fold
-syn cluster pureBasicNoFold contains=pureBasicComment,pureBasicString,pureBasicSynKeyRegion,pureBasicSynRegPat,pureBasicPatRegion,pureBasicMapLhs,pureBasicOperParen
-",@pureBasicEmbeddedScript
-"syn cluster pureBasicEmbeddedScript contains=pureBasicMzSchemeRegion,pureBasicTclRegion,pureBasicPythonRegion,pureBasicRubyRegion,pureBasicPerlRegion
+" Define groups that cannot contain the start of a fold
+syn cluster pureBasicNoFold contains=pureBasicComment,pureBasicString
 
-" while
-" fold while loops
+" TODO: Review skip.
+
+" Fold While ... Wend
 syn region pureBasicFoldWhile
-      \ start="\v\c^\s*<while>"
-      \ end="\v^\c\s*<wend>"
-      \ transparent fold
-      \ keepend extend
-      \ containedin=ALLBUT,@pureBasicNoFold
-      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
+         \ start="\v\c^\s*while>"
+         \ end="\v^\c\s*wend>"
+         \ transparent fold
+         \ keepend extend
+         \ containedin=ALLBUT,@pureBasicNoFold
+"skip+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
 
-" fold for loops for foreach
-" BUG: both use next as terminator, not sure about nesting
-" Testing, a for next within a for next worked.
+" Fold For ForEach ... Next
+" TODO: Better regexp.
 syn region pureBasicFoldFor
-      \ start="\v\c^\s*<(for|foreach)>"
-      \ end="\v^\c\s*<next>"
-      \ transparent fold
-      \ keepend extend
-      \ containedin=ALLBUT,@pureBasicNoFold
-      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
+         \ start="\v\c^\s*(for|foreach)>"
+         \ end="\v^\c\s*next>"
+         \ transparent fold
+         \ keepend extend
+         \ containedin=ALLBUT,@pureBasicNoFold
+"skip+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+
 
-" fold repeat until|forever
+" Fold Repeat ... Until ForEver
 syn region pureBasicFoldRepeat
-            \ start="\v\c^\s*<repeat>"
-            \ end="\v\c^\s*<(until|forever)>"
+            \ start="\v\c^\s*repeat>"
+            \ end="\v\c^\s*(until|forever)>"
             \ transparent fold
             \ keepend extend
             \ containedin=ALLBUT,@pureBasicNoFold
 
-" fold modules and their declarations
+" Fold DeclareModule ... EndDeclareModule
 syn region pureBasicFoldDclModule
-            \ start="\v\c^\s*<declaremodule>"
-            \ end="\v\c^\s*<enddeclaremodule>"
+            \ start="\v\c^\s*declaremodule>"
+            \ end="\v\c^\s*enddeclaremodule>"
             \ transparent fold
             \ keepend extend
             \ containedin=ALLBUT,@pureBasicNoFold
 
+" Fold Module ... EndModule
 syn region pureBasicFoldModule
-            \ start="\v\c^\s*<module>"
-            \ end="\v\c^\s*<endmodule>"
+            \ start="\v\c^\s*module>"
+            \ end="\v\c^\s*endmodule>"
             \ transparent fold
             \ keepend extend
             \ containedin=ALLBUT,@pureBasicNoFold
 
-" fold procedure
+" Fold Procedure ProcedureC ProcedureCDll ProcedureDll ... EndProcedure
+" TODO: Better regexp.
 syn region pureBasicFoldProcedure
-            \ start="\v\c^\s*<procedure>"
-            \ end="\v\c^\s*<endprocedure>"
+            \ start="\v\c^\s*procedur(e|ec|ecdll|edll)>"
+            \ end="\v\c^\s*endprocedure>"
             \ transparent fold
             \ keepend extend
             \ containedin=ALLBUT,@pureBasicNoFold
 
-" fold if...else...endif constructs
+" Fold CompilerIf ... CompilerEndIf
+syn region pureBasicFoldCompilerIf
+            \ start="\v\c^\s*compilerif>"
+            \ end="\v\c^\s*compilerendif>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" Fold EnableAsm ... DisableAsm
+syn region pureBasicFoldEnableAsm
+            \ start="\v\c^\s*<enableasm>"
+            \ end="\v\c^\s*<disableasm>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" Fold Macro ... EndMacro
+syn region pureBasicFoldMacro
+            \ start="\v\c^\s*macro>"
+            \ end="\v\c^\s*endmacro>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" Fold Select ... EndSelect
+" NOTE: I'm explicitly NOT handling Case or Default. If you have enough code
+" in a case to make folding desireable, you are doing it wrong.
+syn region pureBasicFoldMacro
+            \ start="\v\c^\s*select>"
+            \ end="\v\c^\s*endselect>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" Fold CompilerSelect ... CompilerEndSelect
+" NOTE: I'm explicitly NOT handling Case or Default. If you have enough code
+" in a case to make folding desireable, you are doing it wrong.
+syn region pureBasicFoldMacro
+            \ start="\v\c^\s*compilerselect>"
+            \ end="\v\c^\s*endcompilerselect>"
+            \ transparent fold
+            \ keepend extend
+            \ containedin=ALLBUT,@pureBasicNoFold
+
+" Fold by PureBasic IDE markers ;{ ... ;}
+syn region pureBasicFoldByMarker
+         \ start="\v^\s*;\{"
+         \ end="\v^\s*;\}"
+         \ transparent fold
+         \ keepend extend
+
+" TODO: If/elseif/else/endif
 "
 " note that 'endif' has a shorthand which can also match many other end patterns
 " if we did not include the word boundary \> pattern, and also it may match
@@ -223,5 +276,4 @@ syn region pureBasicFoldProcedure
 "      \ contains=TOP
 "      \ skip=+"\%(\\"\|[^"]\)\{-}\%("\|$\)\|'[^']\{-}'+ "comment to fix highlight on wiki'
 "
-" fold try...catch...finally...endtry constru
 " vim: ai:et:sw=3:ts=3

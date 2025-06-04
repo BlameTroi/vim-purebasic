@@ -39,6 +39,11 @@ Else
   Print("While/Wend to halve sum until it is less than 4:")
   While s > 3
     Print(" " + Str(s) + ",")
+    if #true
+      for k = 7 to 10
+        printn(str(k))
+      next k
+    endif
     s = s / 2
   Wend
   PrintN(" " + Str(s))
@@ -48,11 +53,11 @@ Else
   
   PrintN("Try accessing code in a module. There should be an init and three creates.")
   UseModule Ferrari
-  
+;{
   CreateFerrari()
   CreateFerrari()
   CreateFerrari()
-  
+;}
   ; Everything in here that wasn't mentioned in the DeclareModule should be
   ; private.
   
