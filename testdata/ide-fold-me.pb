@@ -1,5 +1,13 @@
 ﻿; A small program to test folding in Vim.
 
+if bool
+  x = 7
+endif
+
+  If false
+    y = 3
+  EndIf
+
 If Not OpenConsole("")
   MessageRequester("ERROR", "Could not open console", #PB_MessageRequester_Ok)
   End
@@ -14,6 +22,10 @@ Else
   
   ; Some lops and ifs.
   
+  If false
+    y = 3
+  EndIf
+
   PrintN("Some simple loops")
   PrintN("")
   
@@ -32,6 +44,21 @@ Else
       Print(".")
     EndIf
   Next i
+
+  ; test nested ifs
+  if #true
+    printn("true")
+  elseif
+    printn("false")
+  else
+    printn("impossible")
+  endif
+
+  if #true
+    printn("true")
+  else
+    printn("false")
+  endif
 
   PrintN(" " + Str(s))
   PrintN("")
@@ -58,18 +85,25 @@ Else
   CreateFerrari()
   CreateFerrari()
 ;}
+
   ; Everything in here that wasn't mentioned in the DeclareModule should be
   ; private.
   
   Module Ferrari
     
+    If #True
+      PrintN("blarg")
+    EndIf
+
     Global Initialized = #False
     
     Procedure Init() ; Private init procedure
+
       If Initialized = #False
         Initialized = #True
         PrintN("InitFerrari()")
       EndIf
+
     EndProcedure
     
     Procedure CreateFerrari()
